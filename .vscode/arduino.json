@@ -2,5 +2,6 @@
     "port": "COM19",
     "board": "arduino:avr:uno",
     "programmer": "AVRISP mkII",
-    "sketch": "_ph-doser.ino"
+    "sketch": "_ph-doser.ino",
+    "output":"./output"
 }
