@@ -1,0 +1,25 @@
+Init View(start):
+    Display - 
+        ph reading
+        'press button to start'
+        extra:
+            cal 7
+            cal 4
+            run motor
+
+Running View(checking):
+    Run logic for ph    
+        if ph is above threshoold
+            start the motor 
+            Display - 
+                'motor on'
+            after motor timer
+            turn off motor
+            Display - 
+                'checking'
+
+Options View(options):
+    cal 7
+    cal 4
+
+
