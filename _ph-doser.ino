@@ -21,6 +21,7 @@ PhState PH_STATE;
 
 enum LcdState
 {
+    LCD_STATE_WELCOME,
     LCD_STATE_CHECKING,
     LCD_STATE_START,
     LCD_STATE_DOSING_DOWN,
@@ -29,26 +30,22 @@ enum LcdState
 
 enum AppState
 {
+    APP_STATE_WELCOME,
     APP_STATE_START,
     APP_STATE_CHECKING,
     APP_STATE_DOSING_START,
     APP_STATE_DOSING_ACTIVE,
-    APP_STATE_MIXING
+    APP_STATE_MIXING,
+    APP_STATE_TOGGLE_MOTOR
 };
-AppState APP_STATE = APP_STATE_START;
+AppState APP_STATE = APP_STATE_WELCOME;
 
 /////////////////////// VARS //////////////////////////////
-boolean adjusting = false; //are we waiting for pump routine to finish(pump ph, wait moments for it ot mix in);
-boolean doOnce = true;
-
-String adjustingStatus = "No Adjustments"; // current status on whats going on with the adjustments - "no adjustments", "Motor Running", "Mixing"
 
 int phUpRelayPin = 7;
 int motorOnTime = 3000;
 int mixWaitTime = 5000;
 int updateTimerInterval = 500;
-int phUpCount = 0;
-int phDownCount = 0;
 
 char buffer[25]; //used for converting float to string
 
@@ -56,21 +53,25 @@ AnalogButtons analogButtons(ANALOG_PIN, INPUT_PULLUP, 1, 30);
 Button b1 = Button(239, &btn1Clicked);
 Button b2 = Button(29, &btn2Clicked);
 
-elapsedMillis adjustmentTimer;
-elapsedMillis updateTimer;
-
 elapsedMillis motorOnTimer;
 elapsedMillis mixingTimer;
 /////////////////////////// START FUNCTIONS /////////////////////////////////
 void btn1Clicked()
 {
-    Serial.println("Btn1 Clicked");
-    APP_STATE = APP_STATE_CHECKING;
+    if(APP_STATE != APP_STATE_WELCOME){
+        phDownRelayOff();
+        APP_STATE = APP_STATE_WELCOME;
+    }else{
+        APP_STATE = APP_STATE_CHECKING;
+    }
+    
 }
 
 void btn2Clicked()
 {
-    Serial.println("Btn2 Clicked");
+    motorOnTimer = 0;
+    phDownRelayOn();
+    APP_STATE = APP_STATE_TOGGLE_MOTOR;
 }
 
 void setup()
@@ -79,15 +80,13 @@ void setup()
 
     pinMode(phUpRelayPin, OUTPUT);
     phDownRelayOff();
+
     atlasPh_Init();
 
     lcd_init();
-    lcd_update(LCD_STATE_START);
 
     analogButtons.add(b1);
     analogButtons.add(b2);
-
-    updateTimer = 0;
 }
 
 void loop()
@@ -97,6 +96,9 @@ void loop()
 
     switch (APP_STATE)
     {
+    case APP_STATE_WELCOME:
+        welcome();
+        break;
     case APP_STATE_CHECKING:
         checking();
         break;
@@ -109,7 +111,14 @@ void loop()
     case APP_STATE_MIXING:
         mixing();
         break;
+    case APP_STATE_TOGGLE_MOTOR:
+        toggleMotor();
+        break;
     }
+    //configureAnalogButtons() //debug for setting up button numbers
+}
+void welcome(){
+    lcd_update(LCD_STATE_WELCOME, atlasPh_phString(), atlasPh_statusString());
 }
 void dosingStart()
 {
@@ -153,7 +162,14 @@ void checking()
         break;
     }
 }
-
+void toggleMotor(){
+    lcd_update(LCD_STATE_DOSING_DOWN);
+    if (motorOnTimer > motorOnTime)
+    {
+        phDownRelayOff();
+        APP_STATE = APP_STATE_WELCOME;
+    }
+}
 void phDownRelayOn()
 {
     digitalWrite(phUpRelayPin, LOW);

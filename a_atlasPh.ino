@@ -35,7 +35,6 @@ String atlasPh_phString()
 }
 String atlasPh_statusString()
 {
-
     switch (PH_STATE)
     {
     case PH_GOOD:
