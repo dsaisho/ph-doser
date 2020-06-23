@@ -44,7 +44,7 @@ AppState APP_STATE = APP_STATE_WELCOME;
 
 int phUpRelayPin = 7;
 int motorOnTime = 3000;
-int mixWaitTime = 5000;
+int mixWaitTime = 20000;
 int updateTimerInterval = 500;
 
 char buffer[25]; //used for converting float to string
