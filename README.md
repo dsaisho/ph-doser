@@ -1,5 +1,5 @@
 # ph-doser
-automative ph doser system using arduino 
+automated ph doser system using arduino 
 ![alt text](./images/wires.jpg)
 
 # Parts List
